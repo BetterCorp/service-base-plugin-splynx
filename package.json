@@ -9,8 +9,8 @@
     "start": "ts-node node_modules/@bettercorp/service-base/lib/index.js",
     "build": "tsc",
     "deploy": "npm publish",
-    "version": "node ./node_modules/@bettercorp/service-base/build/version-internal.js $0",
-    "create": "ts-node node_modules/@bettercorp/service-base/lib/bootstrap.js $0"
+    "create": "ts-node node_modules/@bettercorp/service-base/lib/bootstrap.js $0",
+    "version": "node ./node_modules/@bettercorp/service-base/build/version-bcorp.js $0"
   },
   "files": [
     "lib/**/*"
@@ -18,11 +18,11 @@
   "main": "lib/index.js",
   "version": "0.0.11",
   "dependencies": {
-    "@bettercorp/service-base": "^6.0.20211118021010",
+    "@bettercorp/service-base": "^6.0.20211119162317",
     "@bettercorp/service-base-plugin-events-rabbitmq": "^2.0.20211117143047",
     "@bettercorp/service-base-plugin-web-server": "^3.2.20211111165146",
     "@bettercorp/tools": "^1.2.20211118015545",
-    "@types/node": "^16.11.7",
+    "@types/node": "^16.11.9",
     "@types/uuid": "^8.3.3",
     "axios": "^0.24.0",
     "moment": "^2.29.1",
