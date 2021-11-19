@@ -26,7 +26,8 @@
     "@types/uuid": "^8.3.3",
     "axios": "^0.24.0",
     "moment": "^2.29.1",
-    "qhttp": "^0.6.1"
+    "qhttp": "^0.6.1",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.4.0",

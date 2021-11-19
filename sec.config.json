@@ -91,7 +91,6 @@
       },
       "tokenLifespanMinutes": 60
     },
-    "splynx": {},
     "events-rabbitmq": {
       "prefetch": 10,
       "prefetchEAR": 10,
@@ -102,6 +101,7 @@
       },
       "noRandomDebugName": false,
       "uniqueId": null
-    }
+    },
+    "splynx": {}
   }
 }
