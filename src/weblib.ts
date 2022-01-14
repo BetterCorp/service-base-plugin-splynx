@@ -17,7 +17,7 @@ export interface IServerConfig {
   password: string;
 }
 
-export interface ISplynxData {
-  data: any;
+export interface ISplynxData<T = any> {
+  data: T;
   server: IServerConfig;
 }
