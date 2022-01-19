@@ -34,7 +34,7 @@ export class Splynx implements ISplynx {
 
   addPayment(clientId: number,
     invoiceId?: number, requestId?: number, transactionId?: number,
-    paymentType?: string, receiptNumber?: string, date?: number, amount?: number,
+    paymentType?: string, receiptNumber?: string, date?: number, amount?: number, note?: string,
     comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment> {
     return new Promise(async (resolve, reject) => {
       if (Tools.isNullOrUndefined(clientId)) return reject('clientId not set');
@@ -53,6 +53,7 @@ export class Splynx implements ISplynx {
         receipt_number: receiptNumber,
         date: moment(date).format('YYYY-MM-DD'),
         amount: amount!.toFixed(2),
+        note: note,
         comment: comment,
         field_1: field1,
         field_2: field2,
@@ -282,6 +283,10 @@ export class Splynx implements ISplynx {
 }
 
 export interface ISplynx {
+  addPayment(clientId: number,
+    invoiceId?: number, requestId?: number, transactionId?: number,
+    paymentType?: string, receiptNumber?: string, date?: number, amount?: number, note?: string,
+    comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment>;
   //addNewInvoice(items: Array<UCRM_InvoiceItem>, attributes: Array<UCRM_InvoiceAttribute>, maturityDays: number, invoiceTemplateId: number, clientId: number, applyCredit?: Boolean, proforma?: boolean, adminNotes?: string, notes?: string): Promise<any>;
   //sendInvoice(invoiceId: string): Promise<any>;
   //addNewServiceForClient(service: UCRM_Service, clientId: number): Promise<any>;

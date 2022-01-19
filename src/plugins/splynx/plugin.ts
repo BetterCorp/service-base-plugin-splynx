@@ -63,7 +63,7 @@ export class splynx extends CPluginClient<ISplynxPluginConfig> {
   }
   async addPayment(server: IServerConfig, clientId: number,
     invoiceId?: number, requestId?: number, transactionId?: number,
-    paymentType?: string, receiptNumber?: string, date?: number, amount?: number,
+    paymentType?: string, receiptNumber?: string, date?: number, amount?: number, note?: string,
     comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment> {
     return this.emitEventAndReturn<ISplynxData, any>(SplynxEvents.addPayment, {
       server,
@@ -76,6 +76,7 @@ export class splynx extends CPluginClient<ISplynxPluginConfig> {
         receiptNumber,
         date,
         amount,
+        note,
         comment,
         field1,
         field2,
@@ -114,6 +115,7 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
         data.data.receiptNumber,
         data.data.date,
         data.data.amount,
+        data.data.note,
         data.data.comment,
         data.data.field1,
         data.data.field2,
