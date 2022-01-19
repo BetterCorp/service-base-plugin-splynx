@@ -101,7 +101,7 @@ export class ApiHelper {
         });
     }
 
-    post(url?: any, params?: any, contentType?: any) {
+    post<TP, TR>(url?: any, params?: TP, contentType?: string): Promise<TR> {
         return new Promise((resolve, reject) => {
             let options = {
                 method: 'POST',
@@ -112,7 +112,7 @@ export class ApiHelper {
 
             this.api.process(options, (res?: any) => {
                 if (res.statusCode == 201) {
-                    resolve(res);
+                    resolve(res.response);
                 } else {
                     reject(res);
                 }

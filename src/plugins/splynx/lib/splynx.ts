@@ -2,6 +2,7 @@
 import { Tools } from '@bettercorp/tools/lib/Tools';
 import { IServerConfig, ISplynxAPIVersion } from '../../../weblib';
 //import moment = require('moment');
+import * as moment from 'moment';
 import { ApiHelper } from './index';
 
 export class Splynx implements ISplynx {
@@ -30,6 +31,37 @@ export class Splynx implements ISplynx {
     await this.login();
     return this.server.get(`admin/customers/customer`, id);
   }
+
+  addPayment(clientId: number,
+    invoiceId?: number, requestId?: number, transactionId?: number,
+    paymentType?: string, receiptNumber?: string, date?: number, amount?: number,
+    comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment> {
+    return new Promise(async (resolve, reject) => {
+      if (Tools.isNullOrUndefined(clientId)) return reject('clientId not set');
+      if (Tools.isNullOrUndefined(paymentType)) return reject('paymentType not set');
+      if (Tools.isNullOrUndefined(receiptNumber)) return reject('receiptNumber not set');
+      if (Tools.isNullOrUndefined(amount)) return reject('amount not set');
+
+      await this.login();
+
+      this.server.post<any, SplynxPayment>(`admin/finance/payments`, {
+        customer_id: clientId,
+        invoice_id: invoiceId,
+        request_id: requestId,
+        transaction_id: transactionId,
+        payment_type: paymentType,
+        receipt_number: receiptNumber,
+        date: moment(date).format('YYYY-MM-DD'),
+        amount: amount!.toFixed(2),
+        comment: comment,
+        field_1: field1,
+        field_2: field2,
+        field_3: field3,
+        field_4: field4,
+        field_5: field5,
+      }, 'multipart/form-data').then(resolve).catch(reject);
+    });
+  }
   async getInvoices(invoiceId?: number, clientId?: Number): Promise<SplynxInvoice | SplynxInvoice[]> {
     await this.login();
     if (Tools.isNullOrUndefined(invoiceId)) {
@@ -41,7 +73,7 @@ export class Splynx implements ISplynx {
           sendingInvoices.push(inv);
       }
       return sendingInvoices;
-    }
+    };
     return this.server.get(`admin/finance/invoices`, `${ invoiceId }?customer_id=${ clientId }`);
   }
   async getPayments(paymentId?: Number, clientId?: Number): Promise<SplynxPayment | SplynxPayment[]> {
@@ -55,13 +87,13 @@ export class Splynx implements ISplynx {
           sendingPayments.push(paym);
       }
       return sendingPayments;
-    }
+    };
     return this.server.get(`admin/finance/payments`, `${ paymentId }?customer_id=${ clientId }`);
   }
   async getPaymentMethods(): Promise<SplynxPaymentMethod | SplynxPaymentMethod[]> {
     await this.login();
     return this.server.get(`admin/finance/payment-methods`);
-  }
+  };
   // getServicePlanSurcharges(serviceId?: Number, id?: Number): Promise<any> {
   // let self = this;
   // return new Promise((resolve, reject) => {

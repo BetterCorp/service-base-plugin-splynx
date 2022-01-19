@@ -1,6 +1,7 @@
 export enum SplynxEvents {
   //addNewServiceForClient = "addNewServiceForClient",
   //addNewClient = "addNewClient",
+  addPayment = "addPayment",
   getPayments = "getPayments",
   getPaymentMethods = "getPaymentMethods",
   //getInvoicePdf = "getInvoicePdf",

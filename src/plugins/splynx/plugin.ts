@@ -1,6 +1,6 @@
 import { CPlugin, CPluginClient } from '@bettercorp/service-base/lib/interfaces/plugins';
 import { Tools } from '@bettercorp/tools/lib/Tools';
-import { Splynx } from './lib/splynx';
+import { Splynx, SplynxPayment } from './lib/splynx';
 import { SplynxEvents } from '../../events';
 import { IServerConfig, ISplynxData, ISplynxPluginConfig } from '../../weblib';
 //import { fastify } from '@bettercorp/service-base-plugin-web-server/lib/plugins/fastify/fastify';
@@ -33,7 +33,9 @@ export class splynx extends CPluginClient<ISplynxPluginConfig> {
       data: null
     });
   }
-  async getPayments(server: IServerConfig, clientId: number, id?: number) {
+  async getPayments(server: IServerConfig, clientId: number): Promise<Array<SplynxPayment>>;
+  async getPayments(server: IServerConfig, clientId: number, id: number): Promise<SplynxPayment>;
+  async getPayments(server: IServerConfig, clientId: number, id?: number): Promise<SplynxPayment | Array<SplynxPayment>> {
     return this.emitEventAndReturn<ISplynxData, any>(SplynxEvents.getPayments, {
       server,
       data: {
@@ -50,12 +52,36 @@ export class splynx extends CPluginClient<ISplynxPluginConfig> {
       }
     });
   }
-  async getInvoices(server: IServerConfig, clientId: Number, invoiceId?: Number) {
+  async getInvoices(server: IServerConfig, clientId: number, invoiceId?: number) {
     return this.emitEventAndReturn<ISplynxData, any>(SplynxEvents.getInvoices, {
       server,
       data: {
         clientId,
         invoiceId
+      }
+    });
+  }
+  async addPayment(server: IServerConfig, clientId: number,
+    invoiceId?: number, requestId?: number, transactionId?: number,
+    paymentType?: string, receiptNumber?: string, date?: number, amount?: number,
+    comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment> {
+    return this.emitEventAndReturn<ISplynxData, any>(SplynxEvents.addPayment, {
+      server,
+      data: {
+        clientId,
+        invoiceId,
+        requestId,
+        transactionId,
+        paymentType,
+        receiptNumber,
+        date,
+        amount,
+        comment,
+        field1,
+        field2,
+        field3,
+        field4,
+        field5,
       }
     });
   }
@@ -77,6 +103,27 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
   }
 
 
+  private addPayment(data: ISplynxData) {
+    const self = this;
+    return new Promise((resolve, reject) => self.setupServer(data).then(server => {
+      server.addPayment(data.data.clientId,
+        data.data.invoiceId,
+        data.data.requestId,
+        data.data.transactionId,
+        data.data.paymentType,
+        data.data.receiptNumber,
+        data.data.date,
+        data.data.amount,
+        data.data.comment,
+        data.data.field1,
+        data.data.field2,
+        data.data.field3,
+        data.data.field4,
+        data.data.field5,
+      ).then(resolve).catch(reject);
+    }).catch(reject)
+    );
+  }
   private getPayments(data: ISplynxData) {
     const self = this;
     return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getPayments(data.data.id, data.data.clientId).then(resolve).catch(reject)).catch(reject));
@@ -125,6 +172,7 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
       if ((await self.getPluginConfig()).webhooks === true) {
         self.fastify.post('/initrd/events/:id', (a, b) => self.webHook(a, b));
       }*/
+      self.onReturnableEvent(null, SplynxEvents.addPayment, data => self.addPayment(data));
       self.onReturnableEvent(null, SplynxEvents.getPayments, data => self.getPayments(data));
       self.onReturnableEvent(null, SplynxEvents.getPaymentMethods, data => self.getPaymentMethods(data));
       self.onReturnableEvent(null, SplynxEvents.getServices, data => self.getServices(data));
