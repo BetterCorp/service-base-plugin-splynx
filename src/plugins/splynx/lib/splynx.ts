@@ -407,6 +407,7 @@ export interface SplynxPayment {
   date: string;
   amount: string;
   comment: string;
+  note: string;
   field_1: string;
   field_2: string;
   field_3: string;
