@@ -3,6 +3,7 @@ import { Tools } from '@bettercorp/tools/lib/Tools';
 import { Splynx, SplynxPayment } from './lib/splynx';
 import { SplynxEvents } from '../../events';
 import { IServerConfig, ISplynxData, ISplynxPluginConfig } from '../../weblib';
+import moment = require('moment');
 //import { fastify } from '@bettercorp/service-base-plugin-web-server/lib/plugins/fastify/fastify';
 //import { FastifyReply } from 'fastify/types/reply';
 //import { FastifyRequest } from 'fastify/types/request';
@@ -112,7 +113,7 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
         data.data.requestId,
         data.data.transactionId,
         data.data.paymentType,
-        data.data.receiptNumber,
+        data.data.receiptNumber || `${moment().format('dd MM yyyy')}-${data.data.clientId}`.replace(/ /g, ''),
         data.data.date,
         data.data.amount,
         data.data.note,
