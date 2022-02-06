@@ -113,7 +113,7 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
         data.data.requestId,
         data.data.transactionId,
         data.data.paymentType,
-        data.data.receiptNumber || `${moment().format('DD MM YYYY')}-${data.data.clientId}`.replace(/ /g, ''),
+        data.data.receiptNumber || `${ moment().format('DD MM YYYY') }-${ data.data.clientId }`.replace(/ /g, ''),
         data.data.date || moment().format('YYYY-MM-DD'),
         data.data.amount,
         data.data.note,
@@ -123,29 +123,47 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
         data.data.field3,
         data.data.field4,
         data.data.field5,
-      ).then(resolve).catch(reject);
+      ).then(resolve).catch((a) => {
+        self.log.error(a);
+        reject(a);
+      });
     }).catch(reject)
     );
   }
   private getPayments(data: ISplynxData) {
     const self = this;
-    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getPayments(data.data.id, data.data.clientId).then(resolve).catch(reject)).catch(reject));
+    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getPayments(data.data.id, data.data.clientId).then(resolve).catch((a) => {
+      self.log.error(a);
+      reject(a);
+    })).catch(reject));
   }
   private getPaymentMethods(data: ISplynxData) {
     const self = this;
-    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getPaymentMethods().then(resolve).catch(reject)).catch(reject));
+    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getPaymentMethods().then(resolve).catch(reject)).catch((a) => {
+      self.log.error(a);
+      reject(a);
+    }));
   }
   private getServices(data: ISplynxData) {
     const self = this;
-    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getServices(data.data.clientId).then(resolve).catch(reject)).catch(reject));
+    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getServices(data.data.clientId).then(resolve).catch(reject)).catch((a) => {
+      self.log.error(a);
+      reject(a);
+    }));
   }
   private getInvoices(data: ISplynxData) {
     const self = this;
-    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getInvoices(data.data.invoiceId, data.data.clientId).then(resolve).catch(reject)).catch(reject));
+    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getInvoices(data.data.invoiceId, data.data.clientId).then(resolve).catch(reject)).catch((a) => {
+      self.log.error(a);
+      reject(a);
+    }));
   }
   private getClient(data: ISplynxData) {
     const self = this;
-    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getClient(data.data.id).then(resolve).catch(reject)).catch(reject));
+    return new Promise((resolve, reject) => self.setupServer(data).then(server => server.getClient(data.data.id).then(resolve).catch(reject)).catch((a) => {
+      self.log.error(a);
+      reject(a);
+    }));
   }
 
   /*private async webHook(req: FastifyRequest<any>, reply: FastifyReply): Promise<void> {

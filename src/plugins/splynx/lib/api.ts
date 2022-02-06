@@ -1,5 +1,6 @@
 'use strict';
 
+import { Tools } from '@bettercorp/tools/lib/Tools';
 import * as crypto from 'crypto';
 //import {http_build_query} from 'qhttp';
 const http_build_query = require('qhttp/http_build_query');
@@ -367,7 +368,11 @@ export class SplynxApi {
 
         if (typeof settings.params !== 'undefined') {
             if (contentType === CONTENT_TYPE_MULTIPART_FORM_DATA) {
-                options.formData = settings.params;
+                options.formData = {};
+                for (let oKey of Object.keys(settings.params)) {
+                    if (Tools.isNullOrUndefined(settings.params[oKey])) continue;
+                    options.formData[oKey] = settings.params[oKey];
+                }
             } else {
                 options.body = JSON.stringify(settings.params);
             }
