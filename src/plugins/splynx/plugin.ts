@@ -4,22 +4,20 @@ import { Splynx, SplynxPayment } from './lib/splynx';
 import { SplynxEvents } from '../../events';
 import { IServerConfig, ISplynxData, ISplynxPluginConfig } from '../../weblib';
 import moment = require('moment');
-//import { fastify } from '@bettercorp/service-base-plugin-web-server/lib/plugins/fastify/fastify';
-//import { FastifyReply } from 'fastify/types/reply';
-//import { FastifyRequest } from 'fastify/types/request';
+import { fastify } from '@bettercorp/service-base-plugin-web-server/lib/plugins/fastify/fastify';
 
 export class splynx extends CPluginClient<ISplynxPluginConfig> {
   public readonly _pluginName: string = "splynx";
 
-  /*async onEventsVerifyServer(listener: (resolve: PromiseResolve<boolean, void>, reject: PromiseResolve<any, void>, clientKey: string) => void) {
+  /*async onEventsVerifyServer(listener: (resolve: (), reject: PromiseResolve<any, void>, clientKey: string) => void) {
     this.onReturnableEvent(SplynxEvents.eventsVerifyServer, listener as any);
-  };
-  async onEventsGetServer(listener: (resolve: PromiseResolve<IServerConfig, void>, reject: PromiseResolve<any, void>, clientKey: string) => void) {
-    this.onReturnableEvent(SplynxEvents.eventsGetServer, listener as any);
-  };
-  async onEventsEmitServer(listener: (data: IUCRMServerEvent) => void) {
-    this.onEvent(SplynxEvents.eventsServer, listener as any);
   };*/
+  async onEventsGetServer(listener: (clientKey?: string) => Promise<boolean>) {
+    this.onReturnableEvent<string, boolean>(SplynxEvents.eventsGetServer, listener);
+  };
+  async onEventsEmitServer(listener: (data: any) => Promise<void>) {
+    this.onEvent(SplynxEvents.eventsServer, listener);
+  };
   async getServices(server: IServerConfig, clientId?: number/*, serviceId?: number*/) {
     return this.emitEventAndReturn<ISplynxData, any>(SplynxEvents.getServices, {
       server,
@@ -90,7 +88,7 @@ export class splynx extends CPluginClient<ISplynxPluginConfig> {
 }
 
 export class Plugin extends CPlugin<ISplynxPluginConfig> {
-  //private fastify!: fastify;
+  private fastify!: fastify;
   private setupServer(data: ISplynxData): Promise<Splynx> {
     return new Promise((resolve, reject) => {
       if (Tools.isNullOrUndefined(data)
@@ -166,33 +164,41 @@ export class Plugin extends CPlugin<ISplynxPluginConfig> {
     }));
   }
 
-  /*private async webHook(req: FastifyRequest<any>, reply: FastifyReply): Promise<void> {
-    try {
-      let postBody = req.body;
-      this.log.info(`[CRM] ${ postBody.entity } changed for ${ postBody.extraData.entity.clientId } (${ postBody.eventName }-${ postBody.entityId })`);
-
-      let cleanedID = `${ req.params.id }`.replace(/(?![-])[\W]/g, '').trim().substr(0, 255);
-      let knownServer = await this.emitEventAndReturn<String, Boolean>(null, SplynxEvents.eventsGetServer + cleanedID, cleanedID);
-      if (!knownServer) {
-        reply.status(404).send();
-        return;
-      }
-
-      this.emitEvent(null, SplynxEvents.eventsServer + cleanedID, postBody);
-      reply.status(202).send();
-    } catch (exc) {
-      this.log.error(exc);
-      reply.status(500).send();
-    }
-  }*/
-
   init(): Promise<void> {
     const self = this;
     return new Promise(async (resolve) => {
-      /*self.fastify = new fastify(self);
       if ((await self.getPluginConfig()).webhooks === true) {
-        self.fastify.post('/initrd/events/:id', (a, b) => self.webHook(a, b));
-      }*/
+        self.fastify = new fastify(self);
+        self.fastify.post<any, any>('/initrd/events/:id', async (req, reply) => {
+          try {
+            let postBody = req.body;
+            if (postBody.type == 'ping') {
+              this.log.info(`PING: ${ req.headers.ip }`);
+              reply.status(200).send();
+              return;
+            }
+            if (postBody.type != 'event') {
+              this.log.info(`[${ postBody.type }]: ${ req.headers.ip } - not parsable type, we'll just respond OK`);
+              reply.status(200).send();
+              return;
+            }
+            this.log.info(`[CRM] ${ postBody.data.source } (${ postBody.data.model }) ${ postBody.data.action } for ${ postBody.data.customer_id || (postBody.data.service || {}).id || postBody.data.hook_id || 'UNKNOWN_ID' }`);
+
+            let cleanedID = `${ req.params.id }`.replace(/(?![-])[\W]/g, '').trim().substring(0, 255);
+            let knownServer = await this.emitEventAndReturn<String, Boolean>(null, SplynxEvents.eventsGetServer + cleanedID, cleanedID);
+            if (!knownServer) {
+              reply.status(404).send();
+              return;
+            }
+
+            this.emitEvent(null, SplynxEvents.eventsServer + cleanedID, postBody.data);
+            reply.status(202).send();
+          } catch (exc) {
+            this.log.error(exc);
+            reply.status(500).send();
+          }
+        });
+      }
       self.onReturnableEvent(null, SplynxEvents.addPayment, data => self.addPayment(data));
       self.onReturnableEvent(null, SplynxEvents.getPayments, data => self.getPayments(data));
       self.onReturnableEvent(null, SplynxEvents.getPaymentMethods, data => self.getPaymentMethods(data));
