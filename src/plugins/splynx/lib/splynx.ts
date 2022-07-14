@@ -27,7 +27,7 @@ export class Splynx implements ISplynx {
     await this.login();
     return this.server.get(`admin/customers/customer/${ clientId }/internet-services`);
   }
-  async getClient(id?: Number): Promise<SplynxClient | SplynxClient[]> {
+  async getClients(id?: Number): Promise<SplynxClient | SplynxClient[]> {
     await this.login();
     return this.server.get(`admin/customers/customer`, id);
   }
@@ -297,7 +297,7 @@ export interface ISplynx {
   getServices(clientId?: Number): Promise<Array<SplynxService>>;
   //getServiceSurcharges(serviceId: number): Promise<Array<any>>;
   getInvoices(invoiceId?: number, clientId?: Number): Promise<Array<SplynxInvoice> | SplynxInvoice>;
-  getClient(id?: Number): Promise<Array<SplynxClient> | SplynxClient>;
+  getClients(id?: Number): Promise<Array<SplynxClient> | SplynxClient>;
   //setClient(id: Number, clientObj: any): Promise<Array<any> | any>;
   //addPayment(clientId: Number, methodId: string, amount: number, note: string, invoiceIds?: Array<number>, applyToInvoicesAutomatically?: boolean, userId?: number, additionalProps?: any): Promise<Array<any> | any>;
   //getClientBankAccount(id?: Number, clientId?: Number): Promise<Array<any> | any>;
