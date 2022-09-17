@@ -4,13 +4,14 @@
   "repository": {
     "url": "https://gitlab.com/BetterCorp/public/service-base-plugin-splynx"
   },
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=16.0.0"
+  },
   "scripts": {
-    "dev": "nodemon --config node_modules/@bettercorp/service-base/build/nodemon.json",
-    "start": "ts-node node_modules/@bettercorp/service-base/lib/index.js",
     "build": "tsc",
-    "deploy": "npm publish",
-    "create": "ts-node node_modules/@bettercorp/service-base/lib/bootstrap.js $0",
-    "version": "node ./node_modules/@bettercorp/service-base/build/version-bcorp.js $0"
+    "dev": "nodemon --config node_modules/@bettercorp/service-base/development/nodemon.json",
+    "start": "ts-node node_modules/@bettercorp/service-base/lib/cli.js"
   },
   "files": [
     "lib/**/*"
@@ -19,19 +20,18 @@
   "version": "1.1.0",
   "bsb_project": true,
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.30.6",
-    "@typescript-eslint/parser": "^5.30.6",
-    "eslint": "^8.19.0",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
+    "eslint": "^8.23.1",
     "ts-node": "^10.9.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@bettercorp/service-base": "^7.6.20220531162851",
-    "@bettercorp/service-base-plugin-events-rabbitmq": "^2.1.20220615203957",
-    "@bettercorp/service-base-plugin-web-server": "^4.1.20220429033429",
-    "@bettercorp/tools": "^2.0.20220629134925",
-    "@types/node": "^18.0.4",
-    "@types/uuid": "^8.3.4",
+    "@bettercorp/service-base": "^8.1.1",
+    "@bettercorp/service-base-plugin-events-rabbitmq": "^3.0.0",
+    "@bettercorp/service-base-plugin-web-server": "^5.0.2",
+    "@bettercorp/tools": "^2.1.16",
+    "@types/node": "^18.7.18",
     "axios": "^0.27.2",
     "moment": "^2.29.4",
     "qhttp": "^0.6.1",

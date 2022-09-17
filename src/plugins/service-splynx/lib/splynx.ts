@@ -1,8 +1,8 @@
 //import { Tools } from '@bettercorp/tools/lib/Tools';
 import { Tools } from '@bettercorp/tools/lib/Tools';
-import { IServerConfig, ISplynxAPIVersion } from '../../../weblib';
 //import moment = require('moment');
-import * as moment from 'moment';
+import moment from 'moment';
+import { IServerConfig, ISplynxAPIVersion } from '../sec.config';
 import { ApiHelper } from './index';
 
 export class Splynx implements ISplynx {
