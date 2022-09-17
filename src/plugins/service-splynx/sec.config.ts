@@ -1,5 +1,5 @@
 import { SecConfig } from "@bettercorp/service-base";
-import * as crypto from "crypto";
+import * as bcrypt from "bcrypt";
 
 export enum ISplynxAPIVersion {
   v1 = "1.0",
@@ -15,7 +15,7 @@ export interface IServerConfig {
 export interface ISplynxPluginConfig {
   webhooks: boolean; // Webhooks: Enable inbound webhooks (Not available yet)
   //crmAPI: boolean; //
-  clientEncryptionKey: string; // Client Key: Inbound URL key for WebHooks
+  clientEndpointKey: string; // Client Key: Inbound URL key for WebHooks
   multiTenant: boolean; // Multi-Tenant Mode: If false, Client Key is used to lock down webhooks
   myHost: string; // My Host: My hosts URL
   serverConfig?: IServerConfig; // Server Config: If not running in multi-tenant config, you can define the splynx details here
@@ -32,10 +32,10 @@ export class Config extends SecConfig<ISplynxPluginConfig> {
       webhooks: false,
         //existingConfig.webhooks !== undefined ? existingConfig.webhooks : false,
       //crmAPI: false,
-      clientEncryptionKey:
-        existingConfig.clientEncryptionKey !== undefined
-          ? existingConfig.clientEncryptionKey
-          : crypto.pseudoRandomBytes(64).toString("hex"),
+      clientEndpointKey:
+        existingConfig.clientEndpointKey !== undefined
+          ? existingConfig.clientEndpointKey
+          : Buffer.from(bcrypt.genSaltSync(1).repeat(3), 'utf8').toString('base64url'),
       multiTenant:
         existingConfig.multiTenant !== undefined
           ? existingConfig.multiTenant
