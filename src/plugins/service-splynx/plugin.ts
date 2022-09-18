@@ -7,17 +7,22 @@ import {
   SplynxPaymentMethod,
 } from "./lib/splynx";
 import moment = require("moment");
-import { IPluginLogger, ServiceCallable, ServicesBase } from "@bettercorp/service-base";
+import {
+  IPluginLogger,
+  ServiceCallable,
+  ServicesBase,
+} from "@bettercorp/service-base";
 import { IServerConfig, ISplynxPluginConfig } from "./sec.config";
-import { fastify } from '@bettercorp/service-base-plugin-web-server/lib/clients/service-fastify/plugin';
+import { fastify } from "@bettercorp/service-base-plugin-web-server/lib/clients/service-fastify/plugin";
+import { SplynxWebhookData } from './lib';
 
-export interface SplynxReturnEmitEvents {
-  onWebhook(clientKey: string, data: any): Promise<void>;
+export interface SplynxReturnEmitEvents extends ServiceCallable {
+  onWebhook(clientKey: string, data: SplynxWebhookData): Promise<void>;
 }
-export interface SplynxReturnEmitAndReturnEvents {
+export interface SplynxReturnEmitAndReturnEvents extends ServiceCallable {
   validateClientKey(clientKey: string): Promise<boolean>;
 }
-export interface SplynxEmitAndReturnEvents {
+export interface SplynxEmitAndReturnEvents extends ServiceCallable {
   getServices(
     server: IServerConfig,
     clientId?: number /*, serviceId?: number*/
@@ -111,14 +116,16 @@ export class Service extends ServicesBase<
                 postBody.data.hook_id ||
                 "UNKNOWN_ID"
               }`,
-              {},true
+              {},
+              true
             );
 
             let cleanedID = `${(req.params as any).id}`
               .replace(/(?![-])[\W]/g, "")
               .trim()
               .substring(0, 255);
-            let knownServer = await this.emitEventAndReturn("validateClientKey",
+            let knownServer = await this.emitEventAndReturn(
+              "validateClientKey",
               cleanedID
             );
             if (!knownServer) {
@@ -126,11 +133,8 @@ export class Service extends ServicesBase<
               return;
             }
 
-            self.emitEvent("onWebhook",
-              cleanedID,
-              postBody.data
-            );
-            reply.status(202).send();
+            self.emitEvent("onWebhook", cleanedID, postBody.data);
+            reply.status(200).send();
           } catch (exc: any) {
             self.log.error(exc);
             reply.status(500).send();
@@ -176,12 +180,10 @@ export class Service extends ServicesBase<
     );
     await this.onReturnableEvent(
       "getInvoices",
-      async (server: IServerConfig,
-        clientId: number,
-        invoiceId?: number) => {
-        return (await (
+      async (server: IServerConfig, clientId: number, invoiceId?: number) => {
+        return await (
           await self.setupServer(server)
-        ).getInvoices(invoiceId, clientId));
+        ).getInvoices(invoiceId, clientId);
       }
     );
     await this.onReturnableEvent(
@@ -229,4 +231,3 @@ export class Service extends ServicesBase<
     );
   }
 }
-

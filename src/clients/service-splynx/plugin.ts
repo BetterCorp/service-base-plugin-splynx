@@ -114,9 +114,9 @@ export class splynx
   }
   public override readonly _pluginName: string = "service-splynx";
 
-  /*async onWebhook(listener: {(clientKey: string, data: any): Promise<void>}): Promise<void> {
-    await this._plugin.onEvent('onWebhook', (...a) => {
-
-    });
-  }*/
+  async onWebhook(listener: {
+    (clientKey: string, data: any): Promise<void>;
+  }): Promise<void> {
+    await this._plugin.onEvent("onWebhook", listener);
+  }
 }

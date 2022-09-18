@@ -3,7 +3,7 @@ import * as bcrypt from "bcrypt";
 
 export enum ISplynxAPIVersion {
   v1 = "1.0",
-  v2 = "2.0"
+  v2 = "2.0",
 }
 export interface IServerConfig {
   hostname: string;
@@ -28,14 +28,18 @@ export class Config extends SecConfig<ISplynxPluginConfig> {
   ): ISplynxPluginConfig {
     return {
       serverConfig:
-        existingConfig.serverConfig !== undefined ? existingConfig.serverConfig : undefined,
-      webhooks: false,
-        //existingConfig.webhooks !== undefined ? existingConfig.webhooks : false,
+        existingConfig.serverConfig !== undefined
+          ? existingConfig.serverConfig
+          : undefined,
+      webhooks:
+        existingConfig.webhooks !== undefined ? existingConfig.webhooks : false,
       //crmAPI: false,
       clientEndpointKey:
         existingConfig.clientEndpointKey !== undefined
           ? existingConfig.clientEndpointKey
-          : Buffer.from(bcrypt.genSaltSync(1).repeat(3), 'utf8').toString('base64url'),
+          : Buffer.from(bcrypt.genSaltSync(1).repeat(3), "utf8").toString(
+              "base64url"
+            ),
       multiTenant:
         existingConfig.multiTenant !== undefined
           ? existingConfig.multiTenant
