@@ -1,4 +1,4 @@
-import { Tools } from "@bettercorp/tools/lib/Tools";
+import { CleanStringStrength, Tools } from "@bettercorp/tools/lib/Tools";
 import {
   Splynx,
   SplynxClient,
@@ -14,7 +14,7 @@ import {
 } from "@bettercorp/service-base";
 import { IServerConfig, ISplynxPluginConfig } from "./sec.config";
 import { fastify } from "@bettercorp/service-base-plugin-web-server/lib/clients/service-fastify/plugin";
-import { SplynxWebhookData } from './lib';
+import { SplynxWebhookData } from "./lib";
 
 export interface SplynxReturnEmitEvents extends ServiceCallable {
   onWebhook(clientKey: string, data: SplynxWebhookData): Promise<void>;
@@ -69,8 +69,13 @@ export class Service extends ServicesBase<
   ISplynxPluginConfig
 > {
   private fastify: fastify;
-  constructor(pluginName: string, cwd: string, log: IPluginLogger) {
-    super(pluginName, cwd, log);
+  constructor(
+    pluginName: string,
+    cwd: string,
+    pluginCwd: string,
+    log: IPluginLogger
+  ) {
+    super(pluginName, cwd, pluginCwd, log);
     this.fastify = new fastify(this);
   }
 
@@ -90,55 +95,50 @@ export class Service extends ServicesBase<
   public override async init() {
     const self = this;
     if ((await self.getPluginConfig()).webhooks === true) {
-      self.fastify.post<any, any, any, any>(
-        "/initrd/events/:id",
-        async (req, reply) => {
-          try {
-            let postBody = req.body as any;
-            if (postBody.type == "ping") {
-              self.log.info(`PING: ${req.headers.ip}`);
-              reply.status(200).send();
-              return;
-            }
-            if (postBody.type != "event") {
-              self.log.warn(
-                `[${postBody.type}]: ${req.headers.ip} - not parsable type, we'll just respond OK`
-              );
-              reply.status(200).send();
-              return;
-            }
-            self.log.info(
-              `[CRM] ${postBody.data.source} (${postBody.data.model}) ${
-                postBody.data.action
-              } for ${
-                postBody.data.customer_id ||
-                (postBody.data.service || {}).id ||
-                postBody.data.hook_id ||
-                "UNKNOWN_ID"
-              }`,
-              {},
-              true
-            );
-
-            let cleanedID = `${(req.params as any).id}`
-              .replace(/(?![-])[\W]/g, "")
-              .trim()
-              .substring(0, 255);
-            let knownServer = await this.emitEventAndReturn(
-              "validateClientKey",
-              cleanedID
-            );
-            if (!knownServer) {
-              reply.status(404).send();
-              return;
-            }
-
-            self.emitEvent("onWebhook", cleanedID, postBody.data);
+      self.fastify.post(
+        "/initrd/events/:id/",
+        async (reply, params, query, postBody, req) => {
+          if (postBody.type == "ping") {
+            await self.log.info(`PING: ${req.headers.ip}`);
             reply.status(200).send();
-          } catch (exc: any) {
-            self.log.error(exc);
-            reply.status(500).send();
+            return;
           }
+          if (postBody.type != "event") {
+            await self.log.warn(
+              `[${postBody.type}]: ${req.headers.ip} - not parsable type, we'll just respond OK`
+            );
+            reply.status(200).send();
+            return;
+          }
+          await self.log.info(
+            `[CRM] ${postBody.data.source} (${postBody.data.model}) ${
+              postBody.data.action
+            } for ${
+              postBody.data.customer_id ||
+              (postBody.data.service || {}).id ||
+              postBody.data.hook_id ||
+              "UNKNOWN_ID"
+            }`,
+            {},
+            true
+          );
+
+          let cleanedID = Tools.cleanString(
+            params.id,
+            255,
+            CleanStringStrength.soft
+          );
+          let knownServer = await this.emitEventAndReturn(
+            "validateClientKey",
+            cleanedID
+          );
+          if (!knownServer) {
+            reply.status(404).send();
+            return;
+          }
+
+          await self.emitEvent("onWebhook", cleanedID, postBody.data);
+          reply.status(200).send();
         }
       );
     }

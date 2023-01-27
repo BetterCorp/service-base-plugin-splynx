@@ -1,9 +1,9 @@
 //import { Tools } from '@bettercorp/tools/lib/Tools';
-import { Tools } from '@bettercorp/tools/lib/Tools';
+import { Tools } from "@bettercorp/tools/lib/Tools";
 //import moment = require('moment');
-import moment from 'moment';
-import { IServerConfig, ISplynxAPIVersion } from '../sec.config';
-import { ApiHelper } from './index';
+import moment from "moment";
+import { IServerConfig, ISplynxAPIVersion } from "../sec.config";
+import { ApiHelper } from "./index";
 
 export class Splynx implements ISplynx {
   private server: ApiHelper;
@@ -12,89 +12,132 @@ export class Splynx implements ISplynx {
   constructor(server: IServerConfig) {
     this.serverConf = server;
     this.server = new ApiHelper(server.hostname);
-    this.server.version = server.version === ISplynxAPIVersion.v1 ? ApiHelper.API_VERSION_1_0 : ApiHelper.API_VERSION_2_0;
+    this.server.version =
+      server.version === ISplynxAPIVersion.v1
+        ? ApiHelper.API_VERSION_1_0
+        : ApiHelper.API_VERSION_2_0;
   }
   async login() {
     if (this.loggedIn) return;
     let state = await this.server.login(ApiHelper.LOGIN_TYPE_ADMIN, {
       login: this.serverConf.username,
-      password: this.serverConf.password
+      password: this.serverConf.password,
     });
     if (state.statusCode !== 201) throw state;
     this.loggedIn = true;
   }
   async getServices(clientId?: Number): Promise<SplynxService[]> {
     await this.login();
-    return this.server.get(`admin/customers/customer/${ clientId }/internet-services`);
+    return this.server.get(
+      `admin/customers/customer/${clientId}/internet-services`
+    );
   }
   async getClients(id?: Number): Promise<SplynxClient | SplynxClient[]> {
     await this.login();
     return this.server.get(`admin/customers/customer`, id);
   }
 
-  addPayment(clientId: number,
-    invoiceId?: number, requestId?: number, transactionId?: number,
-    paymentType?: string, receiptNumber?: string, date?: number, amount?: number, note?: string,
-    comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment> {
+  addPayment(
+    clientId: number,
+    invoiceId?: number,
+    requestId?: number,
+    transactionId?: number,
+    paymentType?: string,
+    receiptNumber?: string,
+    date?: number,
+    amount?: number,
+    note?: string,
+    comment?: string,
+    field1?: string,
+    field2?: string,
+    field3?: string,
+    field4?: string,
+    field5?: string
+  ): Promise<SplynxPayment> {
     return new Promise(async (resolve, reject) => {
-      if (Tools.isNullOrUndefined(clientId)) return reject('clientId not set');
-      if (Tools.isNullOrUndefined(paymentType)) return reject('paymentType not set');
-      if (Tools.isNullOrUndefined(receiptNumber)) return reject('receiptNumber not set');
-      if (Tools.isNullOrUndefined(amount)) return reject('amount not set');
+      if (Tools.isNullOrUndefined(clientId)) return reject("clientId not set");
+      if (Tools.isNullOrUndefined(paymentType))
+        return reject("paymentType not set");
+      if (Tools.isNullOrUndefined(receiptNumber))
+        return reject("receiptNumber not set");
+      if (Tools.isNullOrUndefined(amount)) return reject("amount not set");
 
       await this.login();
 
-      this.server.post<any, SplynxPayment>(`admin/finance/payments`, {
-        customer_id: clientId,
-        invoice_id: invoiceId,
-        request_id: requestId,
-        transaction_id: transactionId,
-        payment_type: paymentType,
-        receipt_number: receiptNumber,
-        date: moment(date).format('YYYY-MM-DD'),
-        amount: amount!.toFixed(2),
-        note: note,
-        comment: comment,
-        field_1: field1,
-        field_2: field2,
-        field_3: field3,
-        field_4: field4,
-        field_5: field5,
-      }, 'multipart/form-data').then(resolve).catch(reject);
+      this.server
+        .post<any, SplynxPayment>(
+          `admin/finance/payments`,
+          {
+            customer_id: clientId,
+            invoice_id: invoiceId,
+            request_id: requestId,
+            transaction_id: transactionId,
+            payment_type: paymentType,
+            receipt_number: receiptNumber,
+            date: moment(date).format("YYYY-MM-DD"),
+            amount: amount!.toFixed(2),
+            note: note,
+            comment: comment,
+            field_1: field1,
+            field_2: field2,
+            field_3: field3,
+            field_4: field4,
+            field_5: field5,
+          },
+          "multipart/form-data"
+        )
+        .then(resolve)
+        .catch(reject);
     });
   }
-  async getInvoices(invoiceId?: number, clientId?: Number): Promise<SplynxInvoice | SplynxInvoice[]> {
+  async getInvoices(
+    invoiceId?: number,
+    clientId?: Number
+  ): Promise<SplynxInvoice | SplynxInvoice[]> {
     await this.login();
     if (Tools.isNullOrUndefined(invoiceId)) {
-      let clientIdAsStr = `${ clientId }`;
-      let invoices = await this.server.get<Array<SplynxInvoice>>(`admin/finance/invoices?customer_id=${ clientId }`);
+      let clientIdAsStr = `${clientId}`;
+      let invoices = await this.server.get<Array<SplynxInvoice>>(
+        `admin/finance/invoices?customer_id=${clientId}`
+      );
       let sendingInvoices: Array<SplynxInvoice> = [];
       for (let inv of invoices) {
-        if (inv.customer_id === clientIdAsStr)
-          sendingInvoices.push(inv);
+        if (inv.customer_id === clientIdAsStr) sendingInvoices.push(inv);
       }
       return sendingInvoices;
-    };
-    return this.server.get(`admin/finance/invoices`, `${ invoiceId }?customer_id=${ clientId }`);
+    }
+    return this.server.get(
+      `admin/finance/invoices`,
+      `${invoiceId}?customer_id=${clientId}`
+    );
   }
-  async getPayments(paymentId?: Number, clientId?: Number): Promise<SplynxPayment | SplynxPayment[]> {
+  async getPayments(
+    paymentId?: Number,
+    clientId?: Number
+  ): Promise<SplynxPayment | SplynxPayment[]> {
     await this.login();
     if (Tools.isNullOrUndefined(paymentId)) {
-      let clientIdAsStr = `${ clientId }`;
-      let payments = await this.server.get<Array<SplynxPayment>>(`admin/finance/payments?customer_id=${ clientId }`);
+      let clientIdAsStr = `${clientId}`;
+      let payments = await this.server.get<Array<SplynxPayment>>(
+        `admin/finance/payments?customer_id=${clientId}`
+      );
       let sendingPayments: Array<SplynxPayment> = [];
       for (let paym of payments) {
-        if (paym.customer_id === clientIdAsStr)
-          sendingPayments.push(paym);
+        if (paym.customer_id === clientIdAsStr) sendingPayments.push(paym);
       }
       return sendingPayments;
-    };
-    return this.server.get(`admin/finance/payments`, `${ paymentId }?customer_id=${ clientId }`);
+    }
+    return this.server.get(
+      `admin/finance/payments`,
+      `${paymentId}?customer_id=${clientId}`
+    );
   }
-  async getPaymentMethods(): Promise<SplynxPaymentMethod | SplynxPaymentMethod[]> {
+  async getPaymentMethods(): Promise<
+    SplynxPaymentMethod | SplynxPaymentMethod[]
+  > {
     await this.login();
     return this.server.get(`admin/finance/payment-methods`);
-  };
+  }
   // getServicePlanSurcharges(serviceId?: Number, id?: Number): Promise<any> {
   // let self = this;
   // return new Promise((resolve, reject) => {
@@ -283,20 +326,41 @@ export class Splynx implements ISplynx {
 }
 
 export interface ISplynx {
-  addPayment(clientId: number,
-    invoiceId?: number, requestId?: number, transactionId?: number,
-    paymentType?: string, receiptNumber?: string, date?: number, amount?: number, note?: string,
-    comment?: string, field1?: string, field2?: string, field3?: string, field4?: string, field5?: string): Promise<SplynxPayment>;
+  addPayment(
+    clientId: number,
+    invoiceId?: number,
+    requestId?: number,
+    transactionId?: number,
+    paymentType?: string,
+    receiptNumber?: string,
+    date?: number,
+    amount?: number,
+    note?: string,
+    comment?: string,
+    field1?: string,
+    field2?: string,
+    field3?: string,
+    field4?: string,
+    field5?: string
+  ): Promise<SplynxPayment>;
   //addNewInvoice(items: Array<UCRM_InvoiceItem>, attributes: Array<UCRM_InvoiceAttribute>, maturityDays: number, invoiceTemplateId: number, clientId: number, applyCredit?: Boolean, proforma?: boolean, adminNotes?: string, notes?: string): Promise<any>;
   //sendInvoice(invoiceId: string): Promise<any>;
   //addNewServiceForClient(service: UCRM_Service, clientId: number): Promise<any>;
   //addNewClient(client: UCRM_Client): Promise<any>;
-  getPayments(paymentId?: Number, clientId?: Number): Promise<Array<SplynxPayment> | SplynxPayment>;
-  getPaymentMethods(): Promise<Array<SplynxPaymentMethod> | SplynxPaymentMethod>;
+  getPayments(
+    paymentId?: Number,
+    clientId?: Number
+  ): Promise<Array<SplynxPayment> | SplynxPayment>;
+  getPaymentMethods(): Promise<
+    Array<SplynxPaymentMethod> | SplynxPaymentMethod
+  >;
   //getInvoicePdf(invoiceId: number, clientId: Number): Promise<any>;
   getServices(clientId?: Number): Promise<Array<SplynxService>>;
   //getServiceSurcharges(serviceId: number): Promise<Array<any>>;
-  getInvoices(invoiceId?: number, clientId?: Number): Promise<Array<SplynxInvoice> | SplynxInvoice>;
+  getInvoices(
+    invoiceId?: number,
+    clientId?: Number
+  ): Promise<Array<SplynxInvoice> | SplynxInvoice>;
   getClients(id?: Number): Promise<Array<SplynxClient> | SplynxClient>;
   //setClient(id: Number, clientObj: any): Promise<Array<any> | any>;
   //addPayment(clientId: Number, methodId: string, amount: number, note: string, invoiceIds?: Array<number>, applyToInvoicesAutomatically?: boolean, userId?: number, additionalProps?: any): Promise<Array<any> | any>;
