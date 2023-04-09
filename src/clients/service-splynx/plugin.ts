@@ -1,7 +1,6 @@
 import { ServiceCallable, ServicesClient } from "@bettercorp/service-base";
 import {
   IServerConfig,
-  ISplynxPluginConfig,
 } from "../../plugins/service-splynx/sec.config";
 import {
   SplynxReturnEmitEvents,
@@ -21,8 +20,7 @@ export class splynx
     SplynxReturnEmitEvents,
     SplynxEmitAndReturnEvents,
     SplynxReturnEmitAndReturnEvents,
-    ServiceCallable,
-    ISplynxPluginConfig
+    ServiceCallable
   >
   implements SplynxEmitAndReturnEvents
 {

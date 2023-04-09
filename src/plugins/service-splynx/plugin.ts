@@ -13,7 +13,7 @@ import {
   ServicesBase,
 } from "@bettercorp/service-base";
 import { IServerConfig, ISplynxPluginConfig } from "./sec.config";
-import { fastify } from "@bettercorp/service-base-plugin-web-server/lib/clients/service-fastify/plugin";
+import { fastify } from "@bettercorp/service-base-plugin-web-server";
 import { SplynxWebhookData } from "./lib";
 
 export interface SplynxReturnEmitEvents extends ServiceCallable {

@@ -7,3 +7,4 @@ node_modules
 /test-file-*
 /sec.config.json
 /src/hookexample.json
+/dist-clients
